@@ -1,0 +1,10 @@
+[project]
+name = "playlist-transfer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.32.4",
+    "spotipy>=2.25.1",
+]
