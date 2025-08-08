@@ -1,4 +1,4 @@
-from SpotifyClient import SpotifyClient
+from spotifyclient import SpotifyClient
 
 
 def main():
@@ -7,6 +7,7 @@ def main():
     sc = SpotifyClient(input_client_id, input_client_secret)
     sc.run_auth_flow()
     sc.get_user_playlists()
+    sc.get_playlist_info()
 
 
 if __name__ == "__main__":
