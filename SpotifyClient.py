@@ -1,6 +1,7 @@
 import requests
 import webbrowser
 import base64
+from spotifyplaylist import spotify_playlist
 
 
 class SpotifyClient:
@@ -78,22 +79,40 @@ class SpotifyClient:
                 continue
             owned_playlists_dict[playlist['id']] = playlist['name']
 
-        self.user_playlists = owned_playlists_dict.copy()
+        self.user_playlists_data = owned_playlists_dict.copy()
 
     def get_playlist_info(self):
-        first_key = list(self.user_playlists.keys())[0]
+        first_key = list(self.user_playlists_data.keys())[0]
+        playlist_name = self.user_playlists_data[first_key]
         playlist_url = (
             f"{self.CONST_PLAYLISTS_BASE_URL}"
             f"{first_key}/tracks"
         )
 
-        print(playlist_url)
+        # loop through responses in case response is paginated
+        while True:
+            response = requests.get(
+                playlist_url,
+                {'limit': 50},
+                headers={
+                    'Authorization': 'Bearer ' + self.auth_token
+                })
 
-        response = requests.get(
-            playlist_url,
-            {'limit': 50},
-            headers={
-                'Authorization': 'Bearer ' + self.auth_token
-            })
+            tracks_json = response.json()['items']
+            tracks_dict = dict()
+            for track in tracks_json:
+                track_name = track['track']['name']
+                artists_name = ''
+                for artist in track['track']['artists']:
+                    artists_name += artist['name'] + ' '
+                tracks_dict[track_name] = artists_name
 
-        print(response.json())
+            # 'next' will have a value if there is more content to get
+            if (response.json()['next'] is None):
+                # if next is null, we have everything, break loop
+                break
+            else:
+                # if there is more content, set url and loop runs again
+                playlist_url = response.json()['next']
+
+        self.user_playlists = spotify_playlist(playlist_name, tracks_dict)
